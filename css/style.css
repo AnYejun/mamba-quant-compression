@@ -177,6 +177,20 @@ a { color: inherit; text-decoration: none; }
 .btn--ghost { border-color: var(--border); color: var(--text); background: var(--surface); }
 .btn--ghost:hover { border-color: var(--accent); }
 
+.hero__stats {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 14px; margin-top: 56px;
+}
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 26px; min-width: 130px;
+  transition: border-color .2s, transform .2s;
+}
+.stat:hover { border-color: var(--accent); transform: translateY(-3px); }
+.stat__num { display: block; font-family: var(--mono); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.stat__label { display: block; font-size: 12.5px; color: var(--text-dim); margin-top: 4px; }
+@media (max-width: 540px) { .stat { min-width: 0; flex: 1 1 40%; padding: 14px 16px; } }
+
 /* ---------------- Sections ---------------- */
 .section { padding: 92px 0; border-top: 1px solid var(--border-soft); }
 .section__eyebrow {
