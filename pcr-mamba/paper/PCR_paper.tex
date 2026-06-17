@@ -1,0 +1,244 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[letterpaper,margin=0.75in]{geometry}
+\usepackage{mathptmx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage[colorlinks=true,allcolors=teal]{hyperref}
+\setlength{\columnsep}{0.28in}
+\setlength{\parskip}{2pt}
+\renewcommand{\baselinestretch}{1.02}
+
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{8pt}{3pt}
+\titlespacing*{\subsection}{0pt}{6pt}{2pt}
+
+\newcommand{\Ab}{\bar{A}}
+
+\begin{document}
+
+\twocolumn[
+\begin{center}
+{\LARGE\bfseries Priority-Conditioned Retention: A Controllable\\[2pt]
+Middle-Layer Memory Circuit in Pretrained Mamba\par}
+\vspace{8pt}
+{\large Yejun Ahn \quad Chanhee Jeong \quad Suyun Kim\par}
+\vspace{3pt}
+{\normalsize Department of Applied Artificial Intelligence, Sungkyunkwan University\\
+2026-1 AI Systems --- Team Project (Proposal / Preliminary Report)\par}
+\vspace{10pt}
+\begin{minipage}{0.86\textwidth}
+\small\noindent\textbf{Abstract.}
+State-space models (SSMs) such as Mamba compress an entire history into a
+fixed-size continuous hidden state, achieving linear-time inference at the cost
+of associative recall: unlike attention, they cannot losslessly retrieve an
+arbitrary past token. Prior work attributes this to a capacity bound but leaves
+open whether the practical failure is a \emph{storage} limit or a \emph{control}
+limit. We show that a \textbf{pretrained} Mamba-790m already contains a
+\textbf{controllable, spatially localized memory circuit}, accessible at
+inference with no fine-tuning. By scaling the pre-softplus input to the
+$\Delta$ gate at positions downstream of a target, we reduce the effective decay
+applied to that target and recover associative recall on a capacity-pressured
+multi-query associative-recall (MQAR) task ($0.53 \to 0.73$ at the optimal
+operating point). The effect is dose-dependent, target-specific, and
+bidirectional, and it is \textbf{localized to layers 16--23}. Restricting the
+intervention to these 8 of 48 layers recovers most of the recall gain at
+\textbf{near-zero language-modeling cost (perplexity $\times 1.07$)}, whereas the
+all-layer intervention inflates perplexity $\times 1.81$. We frame this as the
+continuous-state analogue of importance-aware KV-cache compression and report an
+honest boundary: a literal write-quantization analogue does \emph{not} transfer,
+because the superimposed state has no per-item slots to reallocate.
+\end{minipage}
+\vspace{14pt}
+\end{center}
+]
+
+\section{Introduction}
+Mamba and related selective SSMs match Transformers on many language tasks while
+running in linear time, but remain markedly weaker at \emph{associative recall}
+--- retrieving a specific value bound to a key seen earlier in context. Jelassi
+et al.~\cite{jelassi2024} show this stems from a fundamental capacity constraint:
+a fixed state cannot losslessly copy arbitrarily long inputs. Yet a capacity
+bound does not, by itself, explain \emph{behavioral} recall failure at moderate
+load. The failure could be (a) a \textbf{control} problem --- the recurrence
+applies a default recency decay and does not preferentially keep query-relevant
+items --- or (b) a \textbf{storage} problem --- the state is genuinely out of
+bits. These have opposite implications: (a) is fixable at inference; (b) is not.
+
+This paper provides evidence for (a) in a regime where it matters. We do
+\emph{not} modify or retrain the model. Instead we ask: does a pretrained Mamba
+already expose a handle that lets us trade its default recency policy for a
+target-preserving one? We find that it does, that the handle is the $\Delta$
+gate, and --- most importantly --- that the handle is \textbf{localized to a
+contiguous band of middle layers}. Operating only on that band recovers recall
+essentially for free in terms of language-modeling quality, the behavior one
+expects of a dedicated mechanism rather than a diffuse one.
+
+\paragraph{Contributions.}
+(1)~A test-time intervention on the $\Delta$ gate that controllably preserves a
+target item in a capacity-pressured SSM, with dose-response, specificity, and
+bidirectionality controls (\S\ref{sec:control}).
+(2)~Localization of this control to \textbf{layers 16--23} of Mamba-790m, and a
+\textbf{surgical} result: the 8-layer intervention matches most of the full-model
+recall gain at perplexity $\times 1.07$ vs.\ $\times 1.81$
+(\S\ref{sec:circuit}). This is our central finding.
+(3)~A framing placing this control on a single axis with importance-aware
+KV-cache compression, plus an honest negative result: a literal
+write-quantization analogue fails, bounding how far the cache analogy carries
+(\S\ref{sec:boundary}).
+We report scope honestly: all positive results are for Mamba-790m on synthetic
+MQAR; we observe non-replication on Mamba-1.4b and fragility on natural language
+(\S\ref{sec:limits}).
+
+\section{Background and Framing}
+\paragraph{The $\Delta$ gate as a retention knob.}
+In a selective SSM the state updates as
+$h_t = \Ab_t h_{t-1} + \bar{B}_t x_t$, with $\Ab_t = \exp(\Delta_t A)$ and
+$A<0$, so $\Delta_t>0 \Rightarrow \Ab_t \in (0,1)$. The contribution of token
+$i$ surviving to a query at position $T$ is therefore
+$\bar{B}_i x_i \cdot \prod_{\tau>i}\Ab_\tau$. Two facts follow. First, the
+default policy is recency-biased: older contributions decay geometrically.
+Second, the \emph{survival} of an item is governed by the \emph{downstream}
+decays $\prod_{\tau>i}\Ab_\tau$, not by the item's own write alone. Reducing
+$\Delta$ at positions after a target pushes those $\Ab_\tau \to 1$, slowing the
+decay the target experiences --- a preservation lever requiring no weight change.
+
+\paragraph{Discrete $\leftrightarrow$ continuous importance allocation.}
+The KV-cache compression literature (KIVI~\cite{kivi}, KVQuant~\cite{kvquant},
+ZipCache~\cite{zipcache}, and rotation-based quantizers such as
+TurboQuant~\cite{turboquant}) implements one principle: spend more bits on more
+important tokens. This presumes a slotted cache with random access. Mamba has no
+slots --- all items are superimposed in one vector. We therefore treat
+``importance $\to$ retained information'' as architecture-agnostic and
+instantiate it in Mamba not as per-token bit allocation but as \emph{differential
+retention} through the $\Delta$ gate. We name this framing Priority-Conditioned
+Retention (PCR). \S\ref{sec:boundary} reports where the analogy holds and breaks.
+
+\section{Method}
+\paragraph{Task.}
+Multi-query associative recall (MQAR) with random single-token key/value words
+(no semantic priors). A prompt presents $N$ key--value pairs followed by a query
+key; the model must emit the bound value. Capacity pressure is induced by
+increasing $N$; we query the first pair as the default target.
+
+\paragraph{Intervention.}
+We register forward hooks on each layer's \texttt{dt\_proj} and multiply its
+pre-softplus output by a per-position gain $g$. Setting $g<1$ (``other-gain'')
+at positions downstream of the target's value reduces their effective decay. A
+layer mask restricts the intervention to a chosen subset of layers. The model
+runs on its pure-PyTorch sequential path (fused kernels intentionally not
+installed) so the $\Delta$ pathway is hookable. No parameters are updated.
+
+\paragraph{Model and metrics.}
+\texttt{state-spaces/mamba-790m-hf} (48 layers, fp32). We report top-1 recall
+over 30 random seeds per condition, and perplexity on a fixed held-out passage
+under the same gain, relative to the unmodified model.
+
+\section{Results}
+\subsection{Test-time control}\label{sec:control}
+Sweeping other-gain at $N{=}32$ over all layers yields a clear inverted-U with an
+optimum at $g{=}0.8$: recall rises $0.53 \to 0.73$, then collapses for
+$g \le 0.6$ as integration halts. The effect is \textbf{target-specific}:
+applying $g{=}0.8$ to downstream positions yields $0.73$, while the same budget
+on random positions yields only $0.50$ (near base), ruling out a generic
+``more gain helps'' artifact.
+
+\subsection{Layer localization and the surgical circuit}\label{sec:circuit}
+Restricting $g{=}0.8$ to 8-layer bands isolates the responsible depth: recovery
+concentrates in \textbf{L16--23} ($\Delta\,{+}0.13$), with a secondary
+contribution at L24--31 ($+0.07$) and nothing elsewhere. Crucially, the
+localization is also \emph{cheaper}: Table~\ref{tab:main} shows the 8-layer
+intervention captures most of the recall gain at near-zero language-modeling
+cost, while the all-layer version pays a large perplexity tax. A targeted edit to
+the memory circuit is almost free; a global one is not.
+
+\begin{table}[t]
+\centering\small
+\caption{Test-time intervention on Mamba-790m, MQAR $N{=}32$
+(base recall $0.53$, base ppl $\approx 232$).}
+\label{tab:main}
+\begin{tabular}{lcc}
+\toprule
+Intervention & Recall & Perplexity \\
+\midrule
+All layers, $g{=}0.8$ & 0.73 & $\times 1.81$ \\
+\textbf{L16--23 only}, $g{=}0.8$ & \textbf{0.67} & $\mathbf{\times 1.07}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The Discrete--Continuous Boundary}\label{sec:boundary}
+If retention is one lever, \emph{precision} --- the literal KV-quant analogue ---
+is a candidate second lever: quantize the write of low-priority tokens to fewer
+bits. We tested this by quantizing the per-position convolution output (the
+token's written representation) to $k$ bits. Single-item precision is not a
+graceful knob: target recall is flat from $16\to 8$ bits, then cliffs
+($8$-bit $0.53 \to 4$-bit $0.03 \to 0$). Reallocation fails outright: quantizing
+\emph{distractor} positions to 4 bits drives target recall to $0.00$ --- it
+corrupts the shared computation rather than freeing capacity.
+
+This is informative, not merely a null. Because the state is a superposition with
+no random-access slots, lowering one item's write precision either does nothing
+($\ge 8$-bit) or injects noise the whole sequence shares ($\le 4$-bit). There is
+no per-item bit budget to reallocate. The importance-allocation principle thus
+transfers to Mamba \emph{only} through retention (\S\ref{sec:circuit}), not
+through quantization --- a concrete boundary on the KV-cache analogy and an
+empirical instance of the ``no slots'' property that distinguishes
+continuous-state memory from a discrete cache.
+
+\section{Limitations and Scope}\label{sec:limits}
+We state these plainly; they bound the claim and we believe reporting them
+strengthens it. \textbf{Single model:} all positive results are for Mamba-790m;
+on Mamba-1.4b the same intervention shows no positive circuit at a comparable
+pressure regime (all layer-band $\Delta \le 0$ despite ample headroom), so the
+L16--23 circuit appears model-specific and we do not claim a universal depth.
+\textbf{Synthetic task:} effects are robust on random-token MQAR but fragile on
+natural-language multi-fact recall, where the intervention can hurt.
+\textbf{Graded priority is not established:} a three-level graded variant
+appeared monotone but is confounded with query position; we do not claim
+multi-level allocation. The SSM constraint
+($\Delta>0 \Rightarrow \Ab<1$, shared decay) predicts that truly item-selective
+allocation is limited, consistent with \S\ref{sec:boundary}.
+
+\section{Related Work}
+\textbf{SSM capacity.} Jelassi et al.~\cite{jelassi2024} establish the
+copying/capacity limit; work on primacy/recency documents the default decay
+policy. We add a controllability result on top of the capacity picture.
+\textbf{KV-cache compression.} KIVI, KVQuant, ZipCache and rotation-based
+quantizers (TurboQuant~\cite{turboquant}) realize importance-aware bit allocation
+on slotted caches; we ask whether the principle survives the move to a slotless
+continuous state, and find it survives as retention but not as quantization.
+\textbf{Recall and the ``what to keep'' frontier.} Prompting methods such as
+Just Read Twice~\cite{jrt} and architectures such as Based, DeltaNet and
+Titans~\cite{titans} target the same problem, mostly by training new
+architectures or memory modules; ours is a training-free, frozen-base
+alternative. \textbf{Mechanistic interpretability.} Localizing a behavior to a
+contiguous layer band parallels circuit-style findings in Transformers; ours is,
+to our knowledge, an early such localization of a \emph{controllable} memory
+mechanism in a pretrained SSM.
+
+\section{Conclusion and Future Work}
+A pretrained Mamba's associative recall is, in part, a controllable property of a
+specific middle-layer band, not a fixed ceiling. A surgical, training-free
+intervention on layers 16--23 recovers recall at negligible language-modeling
+cost. The importance-aware compression principle transfers to continuous state
+through retention but not through quantization. Our proposed next step is to
+remove the oracle: a small \emph{question-conditioned, auto-localizing}
+controller trained on a frozen base, evaluated against Belady-MIN retention
+efficiency under streaming queries, toward a training-free improvement of the
+recall--capacity frontier of pretrained SSMs.
+
+\begin{thebibliography}{9}\small
+\bibitem{jelassi2024} S.~Jelassi et al. Repeat After Me: Transformers are Better than SSMs at Copying. \emph{ICML}, 2024.
+\bibitem{kivi} Z.~Liu et al. KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache. \emph{ICML}, 2024.
+\bibitem{kvquant} C.~Hooper et al. KVQuant: Towards 10M Context Length LLM Inference. \emph{NeurIPS}, 2024.
+\bibitem{zipcache} Y.~He et al. ZipCache: Accurate and Efficient KV Cache Quantization with Salient Token Identification. \emph{NeurIPS}, 2024.
+\bibitem{turboquant} A.~Zandieh et al. TurboQuant: Online Vector Quantization with Near-Optimal Distortion Rate. \emph{ICLR}, 2026.
+\bibitem{jrt} S.~Arora et al. Just Read Twice: Closing the Recall Gap for Recurrent Language Models. arXiv:2407.05483, 2024.
+\bibitem{titans} A.~Behrouz et al. Titans: Learning to Memorize at Test Time. 2024.
+\bibitem{mamba} A.~Gu and T.~Dao. Mamba: Linear-Time Sequence Modeling with Selective State Spaces. arXiv:2312.00752, 2023.
+\end{thebibliography}
+
+\end{document}
