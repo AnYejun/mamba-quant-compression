@@ -3,7 +3,7 @@
 **A controllable, middle-layer memory circuit in pretrained Mamba.**
 
 Team project · 2026-1 AI Systems · Sungkyunkwan University
-안예준 (Yejun Ahn) · 정찬희 (Chanhee Jeong) · 김수윤 (Suyun Kim)
+정찬희 (Chanhee Jeong) · 안예준 (Yejun Ahn) · 김수윤 (Suyun Kim)
 
 ---
 
@@ -131,7 +131,7 @@ of contribution and cheap to deploy. The closest training-free baseline is
 @misc{pcr2026,
   title  = {Priority-Conditioned Retention: A Controllable Middle-Layer
             Memory Circuit in Pretrained Mamba},
-  author = {Ahn, Yejun and Jeong, Chanhee and Kim, Suyun},
+  author = {Jeong, Chanhee and Ahn, Yejun and Kim, Suyun},
   note   = {Sungkyunkwan University, 2026-1 AI Systems team project},
   year   = {2026}
 }
