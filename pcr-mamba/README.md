@@ -32,7 +32,7 @@ to reallocate (see `src/pcr_writequant.py`, a deliberate negative result).
 ```
 pcr-mamba/
 ├── notebooks/
-│   └── PCR_from_scratch.ipynb     # run end-to-end on Colab T4 (main entry point)
+│   └── PCR_from_scratch.ipynb     # run end-to-end on Colab L4 (main entry point)
 ├── src/
 │   ├── pcr_writequant.py          # write-precision quantization lever (negative result)
 │   └── pcr_stage0_probe.py        # storage-vs-selectivity probe (state effective-rank)
@@ -52,7 +52,7 @@ pcr-mamba/
 
 ## Reproduce
 
-**Environment:** Google Colab with a T4 GPU is sufficient (≈ tens of minutes).
+**Environment:** Google Colab with an L4 GPU (≈ tens of minutes).
 
 > ⚠️ Do **not** install `mamba-ssm` / `causal-conv1d`. We rely on the pure-PyTorch
 > sequential path so the Δ pathway is hookable. The warning
@@ -63,7 +63,7 @@ pcr-mamba/
 pip install -r requirements.txt
 ```
 
-Then open `notebooks/PCR_from_scratch.ipynb` and run top to bottom. It will:
+Then open `notebooks/PCR_from_scratch.ipynb` and run all cells. It will:
 
 1. load `state-spaces/mamba-790m-hf` (fp32, frozen) and install the Δ hook,
 2. print the **capacity curve** (pick N where base recall ≈ 0.4; we use N=32),
