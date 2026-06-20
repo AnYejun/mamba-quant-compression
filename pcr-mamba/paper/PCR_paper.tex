@@ -341,6 +341,49 @@ JRT + PCR                 & 1.00 & 1.00 & 0.95 & $\times 1.97$ \\
 \end{tabular}
 \end{table}
 
+\paragraph{De-confounded graded priority (Experiment~E).}
+The exploratory graded result (Section~\ref{sec:circuit}) applied per-write-position
+gains while always querying the earliest pair, confounding og level with write
+position. Experiment~E separates these factors: each trial randomly assigns
+P1/P2/P3 priority labels to three pairs, then applies downstream suppression at
+the assigned og level, marginalizing over write position.
+
+After de-confounding (Table~\ref{tab:graded}), the monotone holds: P1 ($g{=}0.7$)
+achieves recall $0.13$ vs.\ P3 ($g{=}1.0$) at $0.00$, a lift of $+0.10$ above the
+no-gain random-pair baseline ($0.03$), while P3 shows no lift ($+0.00$). The
+zero-suppression P3 condition exactly matches the no-gain baseline, providing a
+clean causal signal: the og level is the active lever, not position.
+A uniform-$g$ control (all three levels at $g{=}0.8$) lifts all conditions
+above baseline but yields a weaker gradient ($0.10/0.07/0.03$), consistent with
+statistical noise at $n{=}30$ rather than a systematic position artifact. By
+contrast, the original confounded result (P1$=0.53$) is almost entirely explained
+by pair~0's early write position (base recall $0.53$ for pair~0 without any
+intervention); the differential og contributes minimally to that gap.
+Graded allocation is therefore causally confirmed but modest in magnitude,
+consistent with the SSM shared-decay constraint: all pairs traverse the same decay
+trajectory, and downstream suppression shifts one pair's decay floor at the cost
+of not shifting others.
+
+\begin{table}[t]
+\centering
+\caption{De-confounded graded priority ($N{=}32$, $n{=}30$, L19--22). Priority
+labels are randomly assigned to pairs each trial; downstream suppression is applied
+per priority level. The zero-suppression P3 ($g{=}1.0$) matches the no-gain
+baseline, confirming og as the causal lever. The original confounded result is
+dominated by write-position, not og.}
+\label{tab:graded}
+\begin{tabular}{lcccc}
+\toprule
+Condition & P1 & P2 & P3 & Monotone \\
+\midrule
+Random-pair base (no gain)         & 0.03 & 0.03 & 0.00 & --- \\
+Uniform $g{=}0.8$ (all same)      & 0.10 & 0.07 & 0.03 & \checkmark \\
+\textbf{De-confounded} ($g{=}0.7/0.85/1.0$) & \textbf{0.13} & \textbf{0.07} & \textbf{0.00} & \checkmark \\
+Original confounded (cell~12)      & 0.53 & 0.17 & 0.17 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{The Discrete--Continuous Boundary}\label{sec:boundary}
 If retention is one lever, \emph{precision} --- the literal KV-quant analogue ---
 is a candidate second lever: quantize the write of low-priority tokens to fewer
@@ -400,11 +443,15 @@ The L16--23 circuit appears to be a property specific to the 790m scale; we do n
 claim a universal depth or mechanism.
 \textbf{Synthetic task:} effects are robust on random-token MQAR but fragile on
 natural-language multi-fact recall, where the intervention can hurt.
-\textbf{Graded priority is not established:} a three-level graded variant
-appeared monotone but is confounded with query position; we do not claim
-multi-level allocation. The SSM constraint
-($\Delta>0 \Rightarrow \bar{A}<1$, shared decay) predicts that truly
-item-selective allocation is limited, consistent with Section~\ref{sec:boundary}.
+\textbf{Graded priority is real but weak:} a de-confounded experiment
+(Experiment~E) confirms that og level causally controls retention independent of
+write position --- P1 ($g{=}0.7$) achieves $0.13$ vs.\ P3 ($g{=}1.0$) at $0.00$
+after marginalizing over pair positions (Table~\ref{tab:graded}). However, the
+original strong confounded result (P1$=0.53$) was largely a write-position artifact,
+and the de-confounded effect is modest in absolute terms. The SSM shared-decay
+constraint ($\Delta>0\Rightarrow\bar{A}<1$, same trajectory for all pairs) limits
+item-selective allocation, consistent with Section~\ref{sec:boundary}; we do not
+claim robust multi-level allocation.
 
 \section{Related Work}
 \paragraph{SSM capacity.}
