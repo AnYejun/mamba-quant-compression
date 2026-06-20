@@ -300,6 +300,47 @@ Mamba-130m & 24 & L13--16 (4L) & $57$--$70\%$ & $+0.06$ & $\times 0.95$ \\
 \end{tabular}
 \end{table}
 
+\paragraph{JRT baseline (Experiment~D).}
+Just Read Twice (JRT; \citealt{jrt}) is a natural training-free baseline: repeat the
+key--value context before the query so the model compresses it a second time, at a
+cost of $\approx\!\times\!2$ sequence length. Table~\ref{tab:jrt} compares JRT,
+PCR (L19--22, $g{=}0.8$), and their combination across $N\in\{16,32,64\}$.
+
+JRT is a substantially stronger recall lever than PCR. At $N{=}16$ and $N{=}32$
+it achieves perfect recall ($1.00$), while PCR peaks at $0.87$ and $0.70$
+respectively. At $N{=}64$, JRT retains a large advantage ($0.95$), whereas the
+L19--22 circuit \emph{regresses below base} ($0.35 < 0.40$): the minimal 4-layer
+circuit is not robust under sustained capacity pressure. (The 8-layer band
+L16--23 fares better at $N{=}64$; see Table~\ref{tab:main}.) Combining JRT and PCR
+yields no benefit beyond JRT alone --- gains are non-additive ($\Delta{+}0.47$
+combined vs.\ sum $\Delta{+}0.63$) because JRT already saturates recall at
+$N\le 32$.
+
+PCR's distinct advantage is zero sequence overhead ($\times 1.00$ vs.\ $\times 1.97$
+for JRT at $N{=}32$). The comparison therefore identifies a clear operating-point
+split: JRT is preferred when doubled context is affordable; PCR is preferred when
+sequence budget is fixed. At $N{=}64$, neither is satisfactory, and a combined
+JRT+PCR does not recover the shortfall.
+
+\begin{table}[t]
+\centering
+\caption{JRT vs.\ PCR recall across capacity levels ($g{=}0.8$, L19--22 for PCR;
+$n{=}20$ at $N{=}64$, $n{=}30$ otherwise). Sequence overhead is measured at $N{=}32$
+(base $=66$ tokens, JRT $=130$ tokens). JRT saturates recall at $N\le 32$;
+combining JRT+PCR adds nothing. At $N{=}64$, PCR alone regresses below base.}
+\label{tab:jrt}
+\begin{tabular}{lcccc}
+\toprule
+Method & $N{=}16$ & $N{=}32$ & $N{=}64$ & Seq.\ overhead \\
+\midrule
+Base                      & 0.77 & 0.53 & 0.40 & $\times 1.00$ \\
+JRT \citep{jrt}           & \textbf{1.00} & \textbf{1.00} & \textbf{0.95} & $\times 1.97$ \\
+PCR (L19--22), $g{=}0.8$ & 0.87 & 0.70 & 0.35 & $\mathbf{\times 1.00}$ \\
+JRT + PCR                 & 1.00 & 1.00 & 0.95 & $\times 1.97$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{The Discrete--Continuous Boundary}\label{sec:boundary}
 If retention is one lever, \emph{precision} --- the literal KV-quant analogue ---
 is a candidate second lever: quantize the write of low-priority tokens to fewer
@@ -379,7 +420,10 @@ retention but not as quantization.
 Prompting methods such as Just Read Twice \citep{jrt} and architectures such as
 Based, DeltaNet and Titans \citep{titans} target the same problem, mostly by
 training new architectures or memory modules; ours is a training-free,
-frozen-base alternative.
+frozen-base alternative. We directly compare against JRT (Experiment~D,
+Table~\ref{tab:jrt}): JRT achieves higher recall ($+0.47$ at $N{=}32$) at
+$\times 1.97$ sequence overhead; PCR provides a zero-overhead alternative
+($+0.17$, $\times 1.00$), identifying a recall-vs-cost operating-point split.
 \paragraph{Mechanistic interpretability.}
 Localizing a behavior to a contiguous layer band parallels circuit-style findings
 in Transformers; ours is, to our knowledge, an early such localization of a
