@@ -205,19 +205,34 @@ dedicated mechanism rather than a diffuse property.
 
 \begin{table}[t]
 \centering
-\caption{Test-time intervention on Mamba-790m, MQAR $N{=}32$
-(base recall $0.53$, base ppl $\approx 232$). The 8-layer edit captures most of
-the gain at a fraction of the perplexity cost.}
+\caption{Test-time $\Delta$-gate intervention across capacity levels
+(Mamba-790m, $g{=}0.8$, base ppl $\approx 232$). PPL cost is N-independent:
+all-layer $\times 1.81$, L16--23 $\times 1.07$. At $N{=}64$ the surgical
+circuit outperforms all-layer ($\mathbf{0.60} > 0.55$) as off-target
+layers turn harmful under pressure.}
 \label{tab:main}
-\begin{tabular}{lcc}
+\begin{tabular}{lcccc}
 \toprule
-Intervention & Recall & Perplexity \\
+Intervention & $N{=}16$ & $N{=}32$ & $N{=}64$ & PPL \\
 \midrule
-All layers, $g{=}0.8$ & 0.73 & $\times 1.81$ \\
-\textbf{L16--23 only}, $g{=}0.8$ & \textbf{0.67} & $\mathbf{\times 1.07}$ \\
+Base (no gain)                     & 0.77 & 0.53 & 0.40 & $\times 1.00$ \\
+All layers, $g{=}0.8$             & 0.90 & 0.73 & 0.55 & $\times 1.81$ \\
+\textbf{L16--23 only}, $g{=}0.8$ & 0.83 & \textbf{0.67} & \textbf{0.60} & $\mathbf{\times 1.07}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+To verify that L16--23 is not an artifact of the $N{=}32$ operating point, we
+swept the band localization at $N\in\{16,32,64\}$ (Experiment~A). L16--23 is
+the top band at every pressure level, and its advantage over the next-best band
+grows with $N$ (gain $+0.07$, $+0.13$, $+0.20$). At $N{=}64$ a notable reversal
+emerges (Table~\ref{tab:main}): the surgical circuit achieves $0.60$ while the
+all-layer intervention reaches only $0.55$. Per-band inspection shows that
+L8--15 and L32--39, which are neutral at low $N$, shift to $-0.20$ and $-0.25$
+at $N{=}64$. Off-target harm therefore grows with capacity pressure, and the
+surgical variant avoids it entirely. This reversal strengthens the
+dedicated-circuit view: not only does L16--23 suffice, but the surrounding layers
+actively interfere under high load.
 
 \section{The Discrete--Continuous Boundary}\label{sec:boundary}
 If retention is one lever, \emph{precision} --- the literal KV-quant analogue ---
