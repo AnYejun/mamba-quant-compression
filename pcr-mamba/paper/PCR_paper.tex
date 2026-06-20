@@ -19,13 +19,12 @@
 Middle-Layer Memory Circuit in Pretrained Mamba}
 
 \author{%
-  Yejun Ahn \quad Chanhee Jeong \quad Suyun Kim \\
-  Applied Artificial Intelligence\\
-  Sungkyunkwan University\\
-  Seoul, Republic of Korea \\
+  Yejun Ahn \quad Chanhee Jeong \quad Suyun Kim \\[3pt]
   \texttt{canceler94@gmail.com} \quad
   \texttt{yumme@skku.edu} \quad
-  \texttt{jonathankim0514@gmail.com} \\
+  \texttt{jonathankim0514@gmail.com} \\[3pt]
+  Applied Artificial Intelligence, Sungkyunkwan University \\
+  Seoul, Republic of Korea
 }
 
 \begin{document}
@@ -50,7 +49,7 @@ L19--22 that matches the 8-layer result ($0.70$ vs.\ $0.67$, equal within noise
 at $n{=}150$) at nearly identical perplexity cost ($\times 1.08$ vs.\ $\times 1.07$), whereas the
 all-layer intervention inflates perplexity $\times 1.81$. We frame
 this as the continuous-state analogue of importance-aware KV-cache compression
-and report an honest boundary: a literal write-quantization analogue does
+and report a boundary: a literal write-quantization analogue does
 \emph{not} transfer, because the superimposed state has no per-item slots to
 reallocate.
 \end{abstract}
@@ -62,19 +61,19 @@ running in linear time, but remain markedly weaker at \emph{associative recall}
 \citet{jelassi2024} show this stems from a fundamental capacity constraint: a
 fixed state cannot losslessly copy arbitrarily long inputs. Yet a capacity bound
 does not, by itself, explain \emph{behavioral} recall failure at moderate load.
-The failure could be (a) a \textbf{control} problem --- the recurrence applies a
-default recency decay and does not preferentially keep query-relevant items ---
-or (b) a \textbf{storage} problem --- the state is genuinely out of bits. These
+The failure could be (a) a \textbf{control} problem (the recurrence applies a
+default recency decay and does not preferentially keep query-relevant items),
+or (b) a \textbf{storage} problem (the state is genuinely out of bits). These
 have opposite implications: (a) is fixable at inference; (b) is not.
 
 This paper provides evidence for (a) in a regime where it matters. We do
 \emph{not} modify or retrain the model. Instead we ask: does a pretrained Mamba
 already expose a handle that lets us trade its default recency policy for a
 target-preserving one? We find that it does, that the handle is the $\Delta$
-gate, and --- most importantly --- that the handle is localized to a contiguous
-band of middle layers. Operating only on that band recovers recall essentially
-for free in terms of language-modeling quality, the behavior one expects of a
-dedicated mechanism rather than a diffuse one.
+gate, and, most importantly, that the handle is localized to a contiguous
+band of middle layers. Operating only on that band recovers recall at almost no
+cost in language-modeling quality, the behavior one expects of a localized
+mechanism rather than a diffuse one.
 
 \paragraph{Contributions.}
 \begin{itemize}
@@ -88,14 +87,13 @@ recall gain at perplexity $\times 1.07$ vs.\ $\times 1.81$
 minimal circuit (L19--22) that matches the 8-layer recall ($0.70$ vs.\ $0.67$;
 confirmed equivalent at $n{=}150$, Experiment~F) at $\times 1.08$ cost,
 and is both sufficient and necessary within L16--23 (Experiment~G).
-This is our central finding.
 \item A framing placing this control on a single axis with importance-aware
-KV-cache compression, plus an honest negative result: a literal
+KV-cache compression, plus a negative result: a literal
 write-quantization analogue fails, bounding how far the cache analogy carries
 (Section~\ref{sec:boundary}).
 \end{itemize}
-We report scope honestly: all positive results are for Mamba-790m on synthetic
-MQAR; we observe non-replication on Mamba-1.4b and fragility on natural language
+On scope: all positive results are for Mamba-790m on synthetic
+MQAR. We observe non-replication on Mamba-1.4b and fragility on natural language
 (Section~\ref{sec:limits}).
 
 \section{Background and Framing}
@@ -129,7 +127,7 @@ Multi-query associative recall (MQAR) with random single-token key/value words
 (no semantic priors). A prompt presents $N$ key--value pairs followed by a query
 key; the model must emit the bound value. Capacity pressure is induced by
 increasing $N$; we query the first pair as the default target. As $N$ grows the
-base model degrades smoothly (recall $0.77 \to 0.53 \to 0.33$ for
+base model degrades smoothly (recall $0.77 \to 0.53 \to 0.40$ for
 $N{=}16,32,64$); we adopt $N{=}32$ (base recall $0.53$) as the operating point
 that balances pressure and headroom.
 
@@ -196,8 +194,8 @@ L24--31 ($+0.07$) and nothing elsewhere (Figure~\ref{fig:layers}). Crucially, th
 localization is also \emph{cheaper}: Table~\ref{tab:main} shows the 8-layer
 intervention captures most of the recall gain at near-zero language-modeling
 cost, while the all-layer version pays a large perplexity tax. A targeted edit to
-the memory circuit is almost free; a global one is not --- the signature of a
-dedicated mechanism rather than a diffuse property.
+the memory circuit is almost free while a global one is not, which is what we would
+expect from a dedicated mechanism rather than a diffuse property.
 
 \begin{figure}[t]
   \centering
@@ -239,9 +237,9 @@ swept the band localization at $N\in\{16,32,64\}$ (Experiment~A). L16--23 is the
 top 8-layer band at every pressure level, and its advantage grows with load
 (Table~\ref{tab:main}). At $N{=}64$ a notable reversal emerges: the surgical
 circuit ($0.60$) overtakes the all-layer intervention ($0.55$). Per-band
-inspection shows why---L8--15 and L32--39, neutral at low $N$, shift to $-0.20$
+inspection shows why: L8--15 and L32--39, neutral at low $N$, shift to $-0.20$
 and $-0.25$ at $N{=}64$. Off-target harm grows with capacity pressure and the
-surgical variant avoids it entirely: not only does L16--23 suffice, the
+surgical variant avoids it entirely. Not only does L16--23 suffice; the
 surrounding layers actively interfere under high load.
 
 To identify the minimal effective sub-circuit, we performed a fine-grained
@@ -256,22 +254,24 @@ layer ($-0.13$ alone). The 4-layer sub-band L19--22 therefore constitutes a
 ($\times 1.08$ vs.\ $\times 1.07$), and recall statistically equivalent to the
 8-layer band (Table~\ref{tab:ci}, Experiment~F). The surrounding layers L16--18
 and L23 dilute rather than contribute. Experiment~G further confirms that L19--22
-is not merely sufficient but \emph{necessary}: removing it from L16--23---leaving
-only layers~$\{16,17,18,23\}$---collapses the gain to $\Delta{-}0.10$ below base
+is not merely sufficient but \emph{necessary}: removing it from L16--23 (leaving
+only layers~$\{16,17,18,23\}$) collapses the gain to $\Delta{-}0.10$ below base
 (Table~\ref{tab:main}, knockout row).
 
-\paragraph{Statistical validation (Experiment~F).}
-All preceding estimates use $n{=}30$ trials, yielding binary-proportion standard
-errors of ${\approx}\pm0.09$. To validate the load-bearing comparisons at $N{=}32$,
-we re-ran the three key conditions at $n{=}150$ (Table~\ref{tab:ci}). Both circuits
-lift recall substantially above base (L16--23: $0.780$ $[0.71, 0.84]$; L19--22:
-$0.773$ $[0.70, 0.83]$). The two intervals overlap heavily (difference $0.007$),
-confirming that the $0.03$ gap in $n{=}30$ estimates reflects sampling variance
-rather than a reliable difference; we characterise L19--22 as \emph{matching} rather
-than exceeding L16--23. The base recall at $n{=}150$ is $0.620$ $[0.54, 0.69]$; the
-$n{=}30$ estimate of $0.53$ fell on the low side of the sampling distribution, but
-the intervention deltas on which our claims rest are preserved. We report $n{=}30$
-as the primary regime throughout and treat this table as statistical confirmation.
+\paragraph{Robustness and statistical validation (Experiments F--H).}
+We re-ran the load-bearing $N{=}32$ comparisons at $n{=}150$ (Table~\ref{tab:ci}):
+both circuits lift recall well above base (L16--23 $0.780$, L19--22 $0.773$), and
+their 95\% Wilson intervals overlap heavily, so the $0.03$ gap seen at $n{=}30$ is
+sampling noise; we characterise L19--22 as \emph{matching} L16--23, not exceeding
+it. (The $n{=}150$ base of $0.620$ likewise places the $n{=}30$ estimate of $0.53$
+on the low side of its sampling distribution, leaving the intervention deltas
+intact.) Across capacity levels the two circuits diverge (Table~\ref{tab:main},
+Figure~\ref{fig:layers}): the 4-layer core matches the 8-layer band at $N{\le}32$
+but \emph{regresses below base} at $N{=}64$ ($0.35<0.40$), whereas L16--23 stays
+positive and reaches its largest advantage there ($+0.20$; a dedicated
+$N\in\{8,\dots,64\}$ sweep (Experiment~H) confirms the protected-vs-base gap peaks
+at $N{=}64$, $+50\%$ relative). L19--22 is thus the efficient choice at the operating point,
+L16--23 the robust choice under sustained pressure.
 
 \begin{table}[t]
 \centering
@@ -290,17 +290,6 @@ L19--22 (4L)    & 116/150 & 0.773 & $[0.70, 0.83]$ \\
 \end{tabular}
 \end{table}
 
-\paragraph{Capacity sweep and circuit robustness (Experiment~G).}
-The full sweep (Table~\ref{tab:main}, Figure~\ref{fig:layers}) compares all four interventions across
-$N\in\{16,32,64\}$. The 4-layer core matches the 8-layer band at $N{=}16$ and at the
-$N{=}32$ operating point, but \emph{regresses below base} under high pressure
-($0.35 < 0.40$ at $N{=}64$) while L16--23 reaches its strongest advantage ($+0.20$):
-L19--22 is the efficient choice at the operating point, L16--23 the robust choice
-above it. This protected--vs--base gap widens with load---a dedicated sweep over
-$N\in\{8,\dots,64\}$ (Experiment~H) finds it persists at every level and peaks at
-$N{=}64$ ($+0.20$ absolute, $+50\%$ relative)---confirming that downstream suppression
-becomes a stronger retention lever as state capacity saturates.
-
 \paragraph{Scale check: Mamba-130m (Experiment~C).}
 To assess whether a proportional circuit exists in a smaller model, we applied the
 same 4-layer window sweep to Mamba-130m (24 layers, $N{=}32$, $g{=}0.8$). Under
@@ -308,7 +297,7 @@ the proportional-depth hypothesis, the 790m circuit at L19--22
 (${\approx}40$--$47\%$ depth) would predict a counterpart near L9--11 in 130m.
 The result (Table~\ref{tab:scale}) does not support this: the best 4-layer window
 is L13--16 ($57$--$70\%$ depth), shifted well downstream of the prediction, and the
-peak gain is $\Delta{+}0.06$ --- less than half the 790m effect. Eleven of 21
+peak gain is $\Delta{+}0.06$, less than half the 790m effect. Eleven of 21
 windows are actively harmful, and the all-layer intervention degrades both recall
 ($0.43$, below base $0.57$) and language quality ($\times 1.31$). Notably, L13--16
 reduces perplexity ($\times 0.95$), suggesting that $\Delta$ is already elevated
@@ -348,7 +337,7 @@ L19--22 circuit \emph{regresses below base} ($0.35 < 0.40$): the minimal 4-layer
 circuit is not robust under sustained capacity pressure. (The 8-layer band
 L16--23 fares better at $N{=}64$; see Table~\ref{tab:main}.) Combining JRT and PCR
 yields no benefit beyond JRT alone --- gains are non-additive ($\Delta{+}0.47$
-combined vs.\ sum $\Delta{+}0.63$) because JRT already saturates recall at
+combined vs.\ sum $\Delta{+}0.64$) because JRT already saturates recall at
 $N\le 32$.
 
 PCR's distinct advantage is zero sequence overhead ($\times 1.00$ vs.\ $\times 1.97$
@@ -378,22 +367,22 @@ JRT + PCR                 & 1.00 & 1.00 & 0.95 & $\times 1.97$ \\
 
 \paragraph{De-confounded graded priority (Experiment~E).}
 The exploratory graded result (Section~\ref{sec:circuit}) applied per-write-position
-gains while always querying the earliest pair, confounding og level with write
+gains while always querying the earliest pair, confounding other-gain level with write
 position. Experiment~E separates these factors: each trial randomly assigns
 P1/P2/P3 priority labels to three pairs, then applies downstream suppression at
-the assigned og level, marginalizing over write position.
+the assigned other-gain level, marginalizing over write position.
 
 After de-confounding (Table~\ref{tab:graded}), the monotone holds: P1 ($g{=}0.7$)
 achieves recall $0.13$ vs.\ P3 ($g{=}1.0$) at $0.00$, a lift of $+0.10$ above the
 no-gain random-pair baseline ($0.03$), while P3 shows no lift ($+0.00$). The
 zero-suppression P3 condition exactly matches the no-gain baseline, providing a
-clean causal signal: the og level is the active lever, not position.
+clean causal signal: the other-gain level is the active lever, not position.
 A uniform-$g$ control (all three levels at $g{=}0.8$) lifts all conditions
 above baseline but yields a weaker gradient ($0.10/0.07/0.03$), consistent with
 statistical noise at $n{=}30$ rather than a systematic position artifact. By
 contrast, the original confounded result (P1$=0.53$) is almost entirely explained
 by pair~0's early write position (base recall $0.53$ for pair~0 without any
-intervention); the differential og contributes minimally to that gap.
+intervention); the differential other-gain contributes minimally to that gap.
 Graded allocation is therefore causally confirmed but modest in magnitude,
 consistent with the SSM shared-decay constraint: all pairs traverse the same decay
 trajectory, and downstream suppression shifts one pair's decay floor at the cost
@@ -404,8 +393,8 @@ of not shifting others.
 \caption{De-confounded graded priority ($N{=}32$, $n{=}30$, L19--22). Priority
 labels are randomly assigned to pairs each trial; downstream suppression is applied
 per priority level. The zero-suppression P3 ($g{=}1.0$) matches the no-gain
-baseline, confirming og as the causal lever. The original confounded result is
-dominated by write-position, not og.}
+baseline, confirming other-gain as the causal lever. The original confounded result is
+dominated by write-position, not other-gain.}
 \label{tab:graded}
 \begin{tabular}{lcccc}
 \toprule
@@ -420,14 +409,14 @@ Original confounded (cell~12)      & 0.53 & 0.17 & 0.17 & --- \\
 \end{table}
 
 \section{The Discrete--Continuous Boundary}\label{sec:boundary}
-If retention is one lever, \emph{precision} --- the literal KV-quant analogue ---
+If retention is one lever, \emph{precision} (the literal KV-quant analogue)
 is a candidate second lever: quantize the write of low-priority tokens to fewer
 bits. We tested this by quantizing the per-position convolution output (the
 token's written representation) to $k$ bits. Single-item precision is not a
 graceful knob: target recall is flat from $16\to 8$ bits, then cliffs ($8$-bit
 $0.53 \to 4$-bit $0.03 \to 0$). Reallocation fails outright: quantizing
 \emph{distractor} positions to 4 bits drives target recall to $0.00$
-(Figure~\ref{fig:quant}, Table~\ref{tab:quant}) --- it corrupts the shared
+(Figure~\ref{fig:quant}, Table~\ref{tab:quant}): it corrupts the shared
 computation rather than freeing capacity.
 
 \begin{figure}[t]
@@ -442,8 +431,11 @@ computation rather than freeing capacity.
 
 \begin{table}[t]
 \centering
-\caption{Write-precision quantization at $N{=}16$. Neither targeting nor
-reallocation behaves like bit allocation in a slotted cache.}
+\caption{Write-precision quantization at $N{=}16$. This probe uses an
+independent self-contained MQAR harness whose full-precision base recall is
+$0.53$ (cf.\ $0.77$ in Table~\ref{tab:main}); we read the \emph{shape} of the
+precision curve, not absolute values. Neither targeting nor reallocation
+behaves like bit allocation in a slotted cache.}
 \label{tab:quant}
 \begin{tabular}{lccccc}
 \toprule
@@ -455,18 +447,17 @@ distractors & 0.53 & 0.50 & 0.00 & 0.00 & 0.00 \\
 \end{tabular}
 \end{table}
 
-This is informative, not merely a null. Because the state is a superposition with
+The negative result is still informative. Because the state is a superposition with
 no random-access slots, lowering one item's write precision either does nothing
 ($\ge 8$-bit) or injects noise the whole sequence shares ($\le 4$-bit). There is
 no per-item bit budget to reallocate. The importance-allocation principle thus
 transfers to Mamba \emph{only} through retention (Section~\ref{sec:circuit}), not
-through quantization --- a concrete boundary on the KV-cache analogy and an
+through quantization. This is a concrete boundary on the KV-cache analogy and an
 empirical instance of the ``no slots'' property that distinguishes
 continuous-state memory from a discrete cache.
 
 \section{Limitations and Scope}\label{sec:limits}
-We state these plainly; they bound the claim and we believe reporting them
-strengthens it. \textbf{Single model:} all positive results are for Mamba-790m.
+\textbf{Single model:} all positive results are for Mamba-790m.
 Scale checks in both directions fail to replicate the circuit.
 \emph{Larger (1.4b):} all layer-band $\Delta \le 0$ despite ample headroom --- no
 positive circuit at a comparable pressure regime.
@@ -479,7 +470,7 @@ claim a universal depth or mechanism.
 \textbf{Synthetic task:} effects are robust on random-token MQAR but fragile on
 natural-language multi-fact recall, where the intervention can hurt.
 \textbf{Graded priority is real but weak:} a de-confounded experiment
-(Experiment~E) confirms that og level causally controls retention independent of
+(Experiment~E) confirms that other-gain level causally controls retention independent of
 write position --- P1 ($g{=}0.7$) achieves $0.13$ vs.\ P3 ($g{=}1.0$) at $0.00$
 after marginalizing over pair positions (Table~\ref{tab:graded}). However, the
 original strong confounded result (P1$=0.53$) was largely a write-position artifact,
