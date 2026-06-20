@@ -1,5 +1,9 @@
+overleaf/
+sync_overleaf.sh
 .DS_Store
-node_modules/
-*.log
-.vscode/
-.idea/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
