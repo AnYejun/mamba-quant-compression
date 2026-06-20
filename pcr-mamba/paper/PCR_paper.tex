@@ -202,9 +202,10 @@ dedicated mechanism rather than a diffuse property.
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.62\linewidth]{nfig_layers.pdf}
-  \caption{Recovery localizes to a contiguous middle band. Applying $g{=}0.8$ to
-  one 8-layer band at a time, the recall gain concentrates in L16--23 ($+0.13$),
-  with a smaller effect at L24--31; other depths contribute nothing.}
+  \caption{Layer-band localization across capacity levels (Experiment~A). Applying
+  $g{=}0.8$ to one 8-layer band at a time, L16--23 is the top band at every $N$.
+  At $N{=}64$, off-target bands L8--15 ($-0.20$) and L32--39 ($-0.25$) turn
+  actively harmful, making the surgical choice more important under pressure.}
   \label{fig:layers}
 \end{figure}
 
@@ -246,47 +247,18 @@ surrounding layers actively interfere under high load.
 To identify the minimal effective sub-circuit, we performed a fine-grained
 ablation within L16--23 (Experiment~B, $N{=}32$, $g{=}0.8$). Sliding 4-layer
 windows across L16--27 show the recall gain is concentrated in the rear of the
-band: L19--22 achieves recall $0.70$ ($\Delta{+}0.17$), matching the full 8-layer
-result within sampling noise (the nominal $+0.03$ gap is not significant;
-Experiment~F, Table~\ref{tab:minimal}). Earlier windows are weaker
+band: L19--22 achieves recall $0.70$ ($\Delta{+}0.17$), matching the full 8-layer band
+within sampling noise. Earlier windows are weaker
 (L16--19: $\Delta{+}0.10$; L17--20, L18--21: $\Delta{+}0.13$), and L23--26 is
 actively harmful ($-0.10$). Individual-layer inspection confirms L23 as a boundary
 layer ($-0.13$ alone). The 4-layer sub-band L19--22 therefore constitutes a
 \emph{minimal effective circuit}: half the layers, nearly identical PPL cost
-($\times 1.08$ vs.\ $\times 1.07$), and recall that matches the 8-layer band
-(confirmed equivalent at $n{=}150$, Experiment~F; Table~\ref{tab:ci}).
-The surrounding layers L16--18 and L23 dilute rather than contribute.
-Experiment~G further confirms that L19--22 is not merely sufficient but
-\emph{necessary}: removing it from L16--23---leaving only layers~$\{16,17,18,23\}$---collapses
-the gain to $\Delta{-}0.10$ below base (Table~\ref{tab:main}, knockout row).
-
-\begin{table}[t]
-\centering
-\caption{Minimal-circuit comparison at $N{=}32$, $g{=}0.8$. The 4-layer sub-band
-L19--22 matches L16--23 (8 layers) at nearly identical PPL cost---the $+0.03$ gap
-is within noise (Table~\ref{tab:ci})---and is the minimal effective circuit.}
-\label{tab:minimal}
-\begin{tabular}{lccc}
-\toprule
-Intervention & Recall & $\Delta$ recall & PPL \\
-\midrule
-Base (no gain)                            & 0.53 & ---    & $\times 1.00$ \\
-L16--23 (8 layers), $g{=}0.8$            & 0.67 & $+0.13$ & $\times 1.07$ \\
-\textbf{L19--22 (4 layers)}, $g{=}0.8$  & \textbf{0.70} & $\mathbf{+0.17}$ & $\mathbf{\times 1.08}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Capacity sweep and circuit robustness (Experiment~G).}
-The full sweep (Table~\ref{tab:main}) compares all four interventions across
-$N\in\{16,32,64\}$. The 4-layer core matches the 8-layer band at $N{=}16$ and at the
-$N{=}32$ operating point, but \emph{regresses below base} under high pressure
-($0.35 < 0.40$ at $N{=}64$) while L16--23 reaches its strongest advantage ($+0.20$):
-L19--22 is the efficient choice at the operating point, L16--23 the robust choice
-above it. This protected--vs--base gap widens with load---a dedicated sweep over
-$N\in\{8,\dots,64\}$ (Experiment~H) finds it persists at every level and peaks at
-$N{=}64$ ($+0.20$ absolute, $+50\%$ relative)---confirming that downstream suppression
-becomes a stronger retention lever as state capacity saturates.
+($\times 1.08$ vs.\ $\times 1.07$), and recall statistically equivalent to the
+8-layer band (Table~\ref{tab:ci}, Experiment~F). The surrounding layers L16--18
+and L23 dilute rather than contribute. Experiment~G further confirms that L19--22
+is not merely sufficient but \emph{necessary}: removing it from L16--23---leaving
+only layers~$\{16,17,18,23\}$---collapses the gain to $\Delta{-}0.10$ below base
+(Table~\ref{tab:main}, knockout row).
 
 \paragraph{Statistical validation (Experiment~F).}
 All preceding estimates use $n{=}30$ trials, yielding binary-proportion standard
@@ -296,19 +268,16 @@ lift recall substantially above base (L16--23: $0.780$ $[0.71, 0.84]$; L19--22:
 $0.773$ $[0.70, 0.83]$). The two intervals overlap heavily (difference $0.007$),
 confirming that the $0.03$ gap in $n{=}30$ estimates reflects sampling variance
 rather than a reliable difference; we characterise L19--22 as \emph{matching} rather
-than exceeding L16--23. The dose--response optimum at $g{=}0.8$ is confirmed
-($0.810$ $[0.72, 0.88]$ at $n{=}100$, all layers), and the base recall at $n{=}150$
-is $0.620$ $[0.54, 0.69]$; the $n{=}30$ estimate of $0.53$ thus fell on the low side
-of the sampling distribution. Point estimates shift up roughly uniformly at $n{=}150$,
-but the intervention \emph{deltas}---on which our claims rest---are preserved. We
-therefore report $n{=}30$ as the consistent regime throughout and treat this table as
-its validation.
+than exceeding L16--23. The base recall at $n{=}150$ is $0.620$ $[0.54, 0.69]$; the
+$n{=}30$ estimate of $0.53$ fell on the low side of the sampling distribution, but
+the intervention deltas on which our claims rest are preserved. We report $n{=}30$
+as the primary regime throughout and treat this table as statistical confirmation.
 
 \begin{table}[t]
 \centering
 \caption{Statistical validation at $N{=}32$, $g{=}0.8$ ($n{=}150$, 95\% Wilson CI).
-The 0.03 gap between L19--22 and L16--23 at $n{=}30$ falls within noise; both circuits
-are equivalent.}
+The $0.03$ gap between L19--22 and L16--23 at $n{=}30$ falls within noise; both circuits
+are equivalent. (Experiment~F)}
 \label{tab:ci}
 \begin{tabular}{lccc}
 \toprule
@@ -320,6 +289,17 @@ L19--22 (4L)    & 116/150 & 0.773 & $[0.70, 0.83]$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\paragraph{Capacity sweep and circuit robustness (Experiment~G).}
+The full sweep (Table~\ref{tab:main}, Figure~\ref{fig:layers}) compares all four interventions across
+$N\in\{16,32,64\}$. The 4-layer core matches the 8-layer band at $N{=}16$ and at the
+$N{=}32$ operating point, but \emph{regresses below base} under high pressure
+($0.35 < 0.40$ at $N{=}64$) while L16--23 reaches its strongest advantage ($+0.20$):
+L19--22 is the efficient choice at the operating point, L16--23 the robust choice
+above it. This protected--vs--base gap widens with load---a dedicated sweep over
+$N\in\{8,\dots,64\}$ (Experiment~H) finds it persists at every level and peaks at
+$N{=}64$ ($+0.20$ absolute, $+50\%$ relative)---confirming that downstream suppression
+becomes a stronger retention lever as state capacity saturates.
 
 \paragraph{Scale check: Mamba-130m (Experiment~C).}
 To assess whether a proportional circuit exists in a smaller model, we applied the
