@@ -44,10 +44,11 @@ By scaling the pre-softplus input to the $\Delta$ gate at positions downstream o
 a target, we reduce the effective decay applied to that target and recover
 associative recall on a capacity-pressured multi-query associative-recall (MQAR)
 task ($0.53 \to 0.73$ at the optimal operating point). The effect is
-dose-dependent, target-specific, and bidirectional, and it is localized to
-layers~16--23. Restricting the intervention to these 8 of 48 layers recovers most
-of the recall gain at near-zero language-modeling cost (perplexity $\times 1.07$),
-whereas the all-layer intervention inflates perplexity $\times 1.81$. We frame
+dose-dependent, target-specific, and bidirectional, and it is localized to a
+middle-layer band. Fine-grained ablation identifies a minimal 4-layer core at
+L19--22 that matches or exceeds the 8-layer result ($0.70$ vs.\ $0.67$) at nearly
+identical perplexity cost ($\times 1.08$ vs.\ $\times 1.07$), whereas the
+all-layer intervention inflates perplexity $\times 1.81$. We frame
 this as the continuous-state analogue of importance-aware KV-cache compression
 and report an honest boundary: a literal write-quantization analogue does
 \emph{not} transfer, because the superimposed state has no per-item slots to
@@ -83,7 +84,9 @@ bidirectionality controls (Section~\ref{sec:control}).
 \item Localization of this control to layers~16--23 of Mamba-790m, and a
 \emph{surgical} result: the 8-layer intervention matches most of the full-model
 recall gain at perplexity $\times 1.07$ vs.\ $\times 1.81$
-(Section~\ref{sec:circuit}). This is our central finding.
+(Section~\ref{sec:circuit}). Fine-grained ablation further identifies a 4-layer
+minimal circuit (L19--22) that exceeds the 8-layer recall ($0.70 > 0.67$) at
+$\times 1.08$ cost. This is our central finding.
 \item A framing placing this control on a single axis with importance-aware
 KV-cache compression, plus an honest negative result: a literal
 write-quantization analogue fails, bounding how far the cache analogy carries
@@ -234,6 +237,35 @@ surgical variant avoids it entirely. This reversal strengthens the
 dedicated-circuit view: not only does L16--23 suffice, but the surrounding layers
 actively interfere under high load.
 
+To identify the minimal effective sub-circuit, we performed a fine-grained
+ablation within L16--23 (Experiment~B, $N{=}32$, $g{=}0.8$). Sliding 4-layer
+windows across L16--27 show the recall gain is concentrated in the rear of the
+band: L19--22 achieves recall $0.70$ ($\Delta{+}0.17$), exceeding the full 8-layer
+result by $+0.03$ (Table~\ref{tab:minimal}). Earlier windows are weaker
+(L16--19: $\Delta{+}0.10$; L17--20, L18--21: $\Delta{+}0.13$), and L23--26 is
+actively harmful ($-0.10$). Individual-layer inspection confirms L23 as a boundary
+layer ($-0.13$ alone). The 4-layer sub-band L19--22 therefore constitutes a
+\emph{minimal effective circuit}: half the layers, nearly identical PPL cost
+($\times 1.08$ vs.\ $\times 1.07$), and recall that strictly exceeds the 8-layer
+band. The surrounding layers L16--18 and L23 dilute rather than contribute.
+
+\begin{table}[t]
+\centering
+\caption{Minimal-circuit comparison at $N{=}32$, $g{=}0.8$. The 4-layer sub-band
+L19--22 outperforms L16--23 (8 layers) at nearly identical PPL cost, establishing
+it as the minimal effective circuit.}
+\label{tab:minimal}
+\begin{tabular}{lccc}
+\toprule
+Intervention & Recall & $\Delta$ recall & PPL \\
+\midrule
+Base (no gain)                            & 0.53 & ---    & $\times 1.00$ \\
+L16--23 (8 layers), $g{=}0.8$            & 0.67 & $+0.13$ & $\times 1.07$ \\
+\textbf{L19--22 (4 layers)}, $g{=}0.8$  & \textbf{0.70} & $\mathbf{+0.17}$ & $\mathbf{\times 1.08}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{The Discrete--Continuous Boundary}\label{sec:boundary}
 If retention is one lever, \emph{precision} --- the literal KV-quant analogue ---
 is a candidate second lever: quantize the write of low-priority tokens to fewer
@@ -316,8 +348,9 @@ in Transformers; ours is, to our knowledge, an early such localization of a
 \section{Conclusion and Future Work}
 A pretrained Mamba's associative recall is, in part, a controllable property of a
 specific middle-layer band, not a fixed ceiling. A surgical, training-free
-intervention on layers~16--23 recovers recall at negligible language-modeling
-cost. The importance-aware compression principle transfers to continuous state
+intervention on layers~16--23 --- with a 4-layer minimal core at L19--22 that
+exceeds the 8-layer recall ($0.70 > 0.67$) at $\times 1.08$ cost --- recovers
+recall at negligible language-modeling cost. The importance-aware compression principle transfers to continuous state
 through retention but not through quantization. Our proposed next step is to
 remove the oracle: a small \emph{question-conditioned, auto-localizing} controller
 trained on a frozen base, evaluated against Belady-MIN retention efficiency under
