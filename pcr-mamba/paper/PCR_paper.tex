@@ -266,6 +266,40 @@ L16--23 (8 layers), $g{=}0.8$            & 0.67 & $+0.13$ & $\times 1.07$ \\
 \end{tabular}
 \end{table}
 
+\paragraph{Scale check: Mamba-130m (Experiment~C).}
+To assess whether a proportional circuit exists in a smaller model, we applied the
+same 4-layer window sweep to Mamba-130m (24 layers, $N{=}32$, $g{=}0.8$). Under
+the proportional-depth hypothesis, the 790m circuit at L19--22
+(${\approx}40$--$47\%$ depth) would predict a counterpart near L9--11 in 130m.
+The result (Table~\ref{tab:scale}) does not support this: the best 4-layer window
+is L13--16 ($57$--$70\%$ depth), shifted well downstream of the prediction, and the
+peak gain is $\Delta{+}0.06$ --- less than half the 790m effect. Eleven of 21
+windows are actively harmful, and the all-layer intervention degrades both recall
+($0.43$, below base $0.57$) and language quality ($\times 1.31$). Notably, L13--16
+reduces perplexity ($\times 0.95$), suggesting that $\Delta$ is already elevated
+by default in those layers of 130m. Fine-grained ablation within L13--16 finds a
+weakly superior 2-layer sub-window (L14--15, $\Delta{+}0.03$), with individual
+layers each contributing nothing above base ($\Delta{+}0.00$), indicating no
+single-layer concentration. The proportional-depth prediction fails, and the effect
+magnitude is substantially reduced. We treat these results as a boundary condition
+rather than a positive replication (Section~\ref{sec:limits}).
+
+\begin{table}[t]
+\centering
+\caption{Scale comparison at $N{=}32$, $g{=}0.8$. The 790m minimal circuit does
+not transfer proportionally to 130m: the optimal window shifts deeper, the recall
+gain is substantially weaker, and PPL behavior reverses.}
+\label{tab:scale}
+\begin{tabular}{lccccc}
+\toprule
+Model & Layers & Best circuit & Depth & $\Delta$ recall & PPL \\
+\midrule
+Mamba-790m & 48 & L19--22 (4L) & $40$--$47\%$ & $+0.17$ & $\times 1.08$ \\
+Mamba-130m & 24 & L13--16 (4L) & $57$--$70\%$ & $+0.06$ & $\times 0.95$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{The Discrete--Continuous Boundary}\label{sec:boundary}
 If retention is one lever, \emph{precision} --- the literal KV-quant analogue ---
 is a candidate second lever: quantize the write of low-priority tokens to fewer
@@ -313,10 +347,16 @@ continuous-state memory from a discrete cache.
 
 \section{Limitations and Scope}\label{sec:limits}
 We state these plainly; they bound the claim and we believe reporting them
-strengthens it. \textbf{Single model:} all positive results are for Mamba-790m;
-on Mamba-1.4b the same intervention shows no positive circuit at a comparable
-pressure regime (all layer-band $\Delta \le 0$ despite ample headroom), so the
-L16--23 circuit appears model-specific and we do not claim a universal depth.
+strengthens it. \textbf{Single model:} all positive results are for Mamba-790m.
+Scale checks in both directions fail to replicate the circuit.
+\emph{Larger (1.4b):} all layer-band $\Delta \le 0$ despite ample headroom --- no
+positive circuit at a comparable pressure regime.
+\emph{Smaller (130m):} a weak effect exists at L13--16
+($\Delta{+}0.06$, vs.\ $+0.17$ for 790m) but at an anomalous relative depth
+($57$--$70\%$ vs.\ $40$--$47\%$), with PPL decreasing rather than increasing
+($\times 0.95$), suggesting different layer dynamics at this scale.
+The L16--23 circuit appears to be a property specific to the 790m scale; we do not
+claim a universal depth or mechanism.
 \textbf{Synthetic task:} effects are robust on random-token MQAR but fragile on
 natural-language multi-fact recall, where the intervention can hurt.
 \textbf{Graded priority is not established:} a three-level graded variant
