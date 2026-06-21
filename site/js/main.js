@@ -1,4 +1,4 @@
-// Mamba: The Quant Compression — interactions
+// Priority-Conditioned Retention — interactions
 
 // Nav background on scroll
 const nav = document.querySelector('.nav');

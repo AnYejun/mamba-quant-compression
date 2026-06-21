@@ -1,9 +1,20 @@
+# local Overleaf mirror + sync helper (kept untracked)
 overleaf/
 sync_overleaf.sh
+
+# OS / editor
 .DS_Store
+
+# Python
 __pycache__/
 *.py[cod]
-.ipynb_checkpoints/
 *.egg-info/
 dist/
 build/
+.ipynb_checkpoints/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.pdf.bak

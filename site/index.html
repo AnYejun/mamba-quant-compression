@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Priority-Conditioned Retention — SKKU AI System</title>
+  <meta name="description" content="사전학습 Mamba 안의 제어 가능한 중간층 기억 회로. 학습 없이 Δ 게이트만 조절해 capacity 압박 하의 recall을 회복하고, L19–22 4-layer 최소 회로로 국소화한다. 성균관대 AI 시스템 팀 프로젝트." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===== Nav ===== -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="#top" class="nav__brand"><span class="dot"></span> Priority-Conditioned Retention</a>
+      <button class="nav__burger" aria-label="menu">☰</button>
+      <div class="nav__links">
+        <a href="#about">About</a>
+        <a href="#project">Project</a>
+        <a href="#contact">Contact</a>
+        <a href="https://github.com/AnYejun/mamba-quant-compression" class="nav__cta" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Hero ===== -->
+  <header class="hero" id="top">
+    <div class="container">
+      <span class="badge"><span class="pulse"></span> 2026-1 · 성균관대학교 AI 시스템</span>
+      <h1>사전학습 Mamba 안의<br /><span class="accent-text">제어 가능한 기억 회로</span></h1>
+      <p class="lede">Mamba의 associative-recall 실패는 <em>저장(storage)</em>만의 문제가 아니라
+        <em>제어(control)</em>의 문제이기도 하다. <b>학습 없이</b> Δ 게이트만 조절해 capacity 압박 하의
+        recall을 회복하고, 그 제어가 <b>L19–22 단 4개 층</b>에 국소화됨을 보인다.</p>
+      <p class="sub mono">Priority-Conditioned Retention — A Controllable Middle-Layer Memory Circuit in Pretrained Mamba</p>
+      <div class="hero__actions">
+        <a href="#project" class="btn btn--primary">프로젝트 보기</a>
+        <a href="https://github.com/AnYejun/mamba-quant-compression" class="btn btn--ghost" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <div class="hero__stats">
+        <div class="stat"><span class="stat__num accent-text">L19–22</span><span class="stat__label">최소 회로 (4 / 48 layer)</span></div>
+        <div class="stat"><span class="stat__num accent-text">0.53→0.70</span><span class="stat__label">recall 회복</span></div>
+        <div class="stat"><span class="stat__num accent-text">×1.08</span><span class="stat__label">perplexity 비용</span></div>
+        <div class="stat"><span class="stat__num accent-text">0</span><span class="stat__label">fine-tuning (무학습)</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== About ===== -->
+  <section class="section" id="about">
+    <div class="container">
+      <p class="section__eyebrow">About</p>
+      <h2 class="section__title">팀 소개 &amp; 역할 분담</h2>
+      <p class="section__intro">성균관대학교 2026-1 AI 시스템 수업의 3인 팀입니다. 이론·프레이밍,
+        실험·데이터 하니스, 메커니즘·평가로 역할을 나눠 진행했습니다.</p>
+      <div class="team-grid">
+        <article class="member reveal">
+          <div class="member__avatar">정</div>
+          <div class="member__name">정찬희</div>
+          <div class="member__role">Experiments &amp; Data Harness</div>
+          <p class="member__desc">MQAR 용량 곡선과 N-스윕, dose-response·specificity 실험, og(other-gain) 스윕
+            하니스를 구축하고 from-scratch 노트북 파이프라인을 담당했습니다.</p>
+          <div class="member__tags"><span>MQAR</span><span>N-sweep</span><span>Harness</span></div>
+        </article>
+        <article class="member reveal">
+          <div class="member__avatar">안</div>
+          <div class="member__name">안예준</div>
+          <div class="member__role">Lead · Theory &amp; Framing</div>
+          <p class="member__desc">"control vs storage" 프레이밍과 importance-aware 압축의 연속-state 일반화,
+            논문 포지셔닝과 retention↔quantization 대비를 정식화했습니다.</p>
+          <div class="member__tags"><span>Framing</span><span>Positioning</span><span>Writing</span></div>
+        </article>
+        <article class="member reveal">
+          <div class="member__avatar">김</div>
+          <div class="member__name">김수윤</div>
+          <div class="member__role">Mechanism &amp; Evaluation</div>
+          <p class="member__desc">Δ-gate forward hook과 층별 국소화·minimal-core ablation, perplexity 가드레일과
+            n=150 Wilson-CI 검증으로 메커니즘 증거를 수집했습니다.</p>
+          <div class="member__tags"><span>Δ-Gate Hook</span><span>Ablation</span><span>Evaluation</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Project ===== -->
+  <section class="section" id="project">
+    <div class="container">
+      <p class="section__eyebrow">Project</p>
+      <h2 class="section__title">Priority-Conditioned Retention</h2>
+      <p class="section__intro">상태 공간 모델(Mamba)은 과거 전체를 상수 크기 hidden state 하나에 압축해 선형 추론을 얻지만,
+        그 대가로 정확한 정보 복원(recall)에서 Transformer에 뒤진다. 우리는 사전학습된
+        <span class="mono">mamba-790m</span>을 동결한 채, 아키텍처·가중치 수정 없이 Δ 게이트만 조절해
+        이 실패의 상당 부분이 <b>제어 가능</b>함을 보인다.</p>
+
+      <div class="project-lead reveal">
+        <h3>핵심 통찰 — recall은 storage만이 아니라 control 문제</h3>
+        <p>타깃 토큰 <em>이후</em> 위치들의 Δ 게이트 pre-softplus 입력에 이득
+          <span class="mono">g &lt; 1</span>(other-gain)을 곱하면, 타깃이 겪는 감쇠가 느려져 capacity 압박 하에서도
+          recall이 회복된다. 즉 importance-aware 압축은 이산 캐시의 "토큰당 비트"가 아니라 연속-state의
+          <b>차등 보존(retention)</b>으로 일반화된다.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card reveal">
+          <span class="num">01 · Finding</span>
+          <h4>control, not (only) storage</h4>
+          <p>fine-tuning 없이 downstream Δ 게이트만 조절해 N=32 MQAR에서 recall
+            <b>0.53 → 0.70</b>. 저장 용량을 키우지 않고도 회복이 일어난다.</p>
+        </div>
+        <div class="card reveal">
+          <span class="num">02 · Mechanism</span>
+          <h4>Δ-게이트 차등 보존</h4>
+          <p>타깃 이후 위치에 <span class="mono">og &lt; 1</span>을 곱하면 감쇠가 느려진다.
+            효과는 <b>downstream에 특이적</b>(random 0.50 ≪ downstream 0.73).</p>
+        </div>
+        <div class="card reveal">
+          <span class="num">03 · Circuit</span>
+          <h4>L19–22 4-layer 최소 회로</h4>
+          <p>제어는 중간층 <b>L16–23</b>에 국소화되고, 미세 ablation으로
+            <b>L19–22</b> 4개 층까지 좁혀진다 — 충분(sufficient)하고 필요(necessary)하다.</p>
+        </div>
+        <div class="card reveal">
+          <span class="num">04 · Negative result</span>
+          <h4>quantization은 전이 안 됨</h4>
+          <p>중첩된 상수 state에는 재배분할 per-item slot이 없다. write-precision 양자화 레버는
+            실패하고(<span class="mono">distractor k-bit → 0.00</span>), retention만 전이된다.</p>
+        </div>
+      </div>
+
+      <div class="eq">recall 0.53 → 0.70   ·   perplexity ×1.08   ·   L19–22 (4 / 48 layer), og=0.8</div>
+
+      <h3 style="margin-top:40px; font-size:18px; letter-spacing:-0.02em;">핵심 발견</h3>
+      <ul class="hyp-list">
+        <li><b>F1</b><span>downstream Δ 게이트만으로 recall이 회복된다 (0.53→0.70, 무학습).</span></li>
+        <li><b>F2</b><span>효과는 downstream에 특이적이다 (random 0.50 ≪ downstream 0.73).</span></li>
+        <li><b>F3</b><span>제어는 L16–23에 국소화되고, L19–22 4개 층이 8개 층 성능을 그대로 낸다.</span></li>
+        <li><b>F4</b><span>국소 개입은 perplexity 비용이 거의 없다 (×1.08 vs 전체층 ×1.81).</span></li>
+        <li><b>F5</b><span>quantization은 전이되지 않는다 — importance는 retention으로만 일반화된다.</span></li>
+      </ul>
+
+      <h3 style="margin-top:40px; font-size:18px; letter-spacing:-0.02em;">범위 &amp; 한계</h3>
+      <div class="roadmap">
+        <div class="roadmap__item reveal">
+          <span class="roadmap__tier">모델</span>
+          <span class="roadmap__body"><b>단일 모델 의존.</b> 양성 결과는 mamba-790m 한정 — 1.4b에선 재현 안 되고
+            130m엔 약하게(≈⅓) 전이된다. 790m 스케일 특이적일 가능성.</span>
+        </div>
+        <div class="roadmap__item reveal">
+          <span class="roadmap__tier">과제</span>
+          <span class="roadmap__body"><b>합성 과제.</b> random-token MQAR에선 robust하지만 자연어 multi-fact
+            recall에선 fragile하다.</span>
+        </div>
+        <div class="roadmap__item reveal">
+          <span class="roadmap__tier">효과</span>
+          <span class="roadmap__body"><b>graded priority는 약하다.</b> de-confounded 실험에서 other-gain의 인과성은
+            확인되나 효과 크기는 작다 — 기존 강한 결과는 상당 부분 write-position 아티팩트였다.</span>
+        </div>
+        <div class="roadmap__item reveal">
+          <span class="roadmap__tier">접근</span>
+          <span class="roadmap__body"><b>training-free.</b> Titans·DeltaNet·TTT·Mamba-2가 새 구조를 <em>학습</em>하는 것과 달리,
+            기존 회로를 깨워 쓰는 무학습·동결-베이스 접근이다 (가장 가까운 baseline: Just Read Twice).</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Contact ===== -->
+  <section class="section" id="contact">
+    <div class="container">
+      <p class="section__eyebrow">Contact</p>
+      <h2 class="section__title">연락</h2>
+      <p class="section__intro">프로젝트에 대한 문의나 협업 제안은 아래로 연락 주세요.</p>
+      <div class="contact-grid">
+        <div class="contact-card reveal">
+          <div class="who">정찬희</div>
+          <div class="what">Experiments &amp; Data Harness</div>
+          <a href="mailto:yumme@skku.edu">✉ yumme@skku.edu</a>
+        </div>
+        <div class="contact-card reveal">
+          <div class="who">안예준</div>
+          <div class="what">Lead · Theory &amp; Framing</div>
+          <a href="mailto:canceler94@gmail.com">✉ canceler94@gmail.com</a>
+          <a href="https://github.com/AnYejun" target="_blank" rel="noopener">⌥ github.com/AnYejun</a>
+        </div>
+        <div class="contact-card reveal">
+          <div class="who">김수윤</div>
+          <div class="what">Mechanism &amp; Evaluation</div>
+          <a href="mailto:jonathankim0514@gmail.com">✉ jonathankim0514@gmail.com</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container">
+      <p class="mono">Priority-Conditioned Retention</p>
+      <p>성균관대학교 · 2026-1 AI 시스템 · 정찬희 · 안예준 · 김수윤</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
