@@ -1,8 +1,12 @@
 # Priority-Conditioned Retention: A Controllable Middle-Layer Memory Circuit in Pretrained Mamba
 
-**안예준, 정찬희, 김수윤**
+**정찬희, 안예준, 김수윤**
 성균관대학교 · 2026-1 AI 시스템
 *Workshop submission draft (non-archival) — single-model mechanistic study*
+
+> ⚠️ **기획 단계 기록.** 이 문서는 최종본 이전의 초안입니다. L19–22 최소 회로,
+> 실험 F–H, n=150 통계 검증 등 최종 결과는 반영돼 있지 않습니다.
+> 최종 산출물은 [`paper/PCR_paper.pdf`](../paper/PCR_paper.pdf)를 참고하세요.
 
 ---
 

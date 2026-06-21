@@ -2,8 +2,12 @@
 ### Importance-Aware Capacity Allocation in Continuous-State Sequence Models
 **— KV-캐시 압축 프론티어의 Mamba로의 일반화 (Priority-Conditioned Retention)**
 
-> **Technical Report** · 2026-1 AI 시스템 · 안예준 · 김수윤 · 정찬희
+> **Technical Report** · 2026-1 AI 시스템 · 안예준 · 정찬희 · 김수윤
 > 상태: 주제 구체화(scoping) — ICLR/NeurIPS 스타일 정식 논문의 선행 문서
+
+> ⚠️ **기획 단계 기록.** 이 문서는 프로젝트 초기의 구상(`[P1]>[P2]>[P3]` grammar 등)을
+> 담은 기획 문서로, 실제 수행한 최종 결과와 프레이밍이 다릅니다.
+> 최종 산출물은 [`paper/PCR_paper.pdf`](../paper/PCR_paper.pdf)를 참고하세요.
 
 ---
 
